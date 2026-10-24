@@ -24,7 +24,7 @@ jobs:
         run: python main.py
 
       - name: Upload generated video
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: output-video
           path: output/quran_reel.mp4
