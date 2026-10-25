@@ -1,6 +1,6 @@
 import os
 from PIL import Image, ImageDraw, ImageFont
-from moviepy.editor import TextClip, ColorClip, CompositeVideoClip
+from moviepy.editor import ImageClip
 
 # Ensure output directory exists
 os.makedirs("output", exist_ok=True)
@@ -10,47 +10,41 @@ width, height = 1080, 1920
 fps = 30
 duration = 7  # seconds
 
-# Create base background color (Dark Aesthetic Theme)
-bg_clip = ColorClip(size=(width, height), color=(15, 23, 42), duration=duration)
+# Create a blank image with a dark aesthetic background color (RGB: 15, 23, 42)
+img = Image.new("RGB", (width, height), color=(15, 23, 42))
+draw = ImageDraw.Draw(img)
+
+# Load default font (PIL fallback font)
+try:
+    font_arabic = ImageFont.load_default()
+    font_trans = ImageFont.load_default()
+except Exception:
+    font_arabic = None
+    font_trans = None
 
 # Arabic Verse & Translation Text
 arabic_text = "فَبِأَيِّ آلَاءِ رَبِّكُمَا تُكَذِّبَانِ"
 translation_text = "So which of the favors of your Lord will you deny?"
 surah_ref = "Surah Ar-Rahman [55:13]"
 
-# Create Text Overlay (MoviePy TextClip)
-# Uses default font, styled for mobile screens
-txt_arabic = TextClip(
-    arabic_text,
-    fontsize=60,
-    color='gold',
-    size=(width - 100, None),
-    method='caption'
-).set_position(('center', height * 0.35)).set_duration(duration)
+# Draw text onto the image canvas
+# (Using simple centered coordinates for the test card)
+draw.text((100, 700), arabic_text, fill="gold")
+draw.text((100, 950), translation_text, fill="white")
+draw.text((100, 1150), surah_ref, fill="lightgray")
 
-txt_trans = TextClip(
-    translation_text,
-    fontsize=40,
-    color='white',
-    size=(width - 120, None),
-    method='caption'
-).set_position(('center', height * 0.52)).set_duration(duration)
+# Save the generated frame temporarily
+temp_image_path = "output/temp_frame.png"
+img.save(temp_image_path)
 
-txt_ref = TextClip(
-    surah_ref,
-    fontsize=30,
-    color='lightgray',
-    method='caption'
-).set_position(('center', height * 0.65)).set_duration(duration)
+# Convert the image into a MoviePy video clip
+video_clip = ImageClip(temp_image_path).set_duration(duration)
 
-# Composite all elements together
-final_video = CompositeVideoClip([bg_clip, txt_arabic, txt_trans, txt_ref])
-
-# Export video file
-final_video.write_videofile(
+# Export final video file
+video_clip.write_videofile(
     "output/quran_reel.mp4",
     fps=fps,
     codec="libx264",
     audio=False
 )
-print("Video successfully generated!")
+print("Video successfully generated with Pillow!")
